@@ -24,7 +24,7 @@ interface ColumnDef {
 
 const COLUMNS: ColumnDef[] = [
   { key: 'id', label: 'ID', width: '70px', sortKey: 'id', required: true, render: (t) => <span className="tabular text-[var(--text-tertiary)]">{t.id}</span> },
-  { key: 'wbs', label: 'WBS', width: '100px', sortKey: 'wbs', render: (t) => <span className="tabular text-[var(--text-tertiary)] truncate">{t.wbs}</span> },
+  { key: 'wbs', label: 'WBS', width: '100px', sortKey: 'wbs', render: (t) => <span className="tabular text-[var(--text-tertiary)] truncate block">{t.wbs}</span> },
   {
     key: 'name',
     label: 'Name',
@@ -32,15 +32,15 @@ const COLUMNS: ColumnDef[] = [
     sortKey: 'name',
     required: true,
     render: (t) => (
-      <span className="truncate" style={{ paddingLeft: (t.outlineLevel - 1) * 12 }} title={t.name}>
+      <span className="truncate block" style={{ paddingLeft: (t.outlineLevel - 1) * 12 }} title={t.name}>
         {t.name}
       </span>
     ),
   },
-  { key: 'milestone', label: 'Milestone', width: '100px', render: (t) => <span className="text-[var(--text-secondary)] truncate">{t.milestone ?? '-'}</span> },
-  { key: 'track', label: 'Track', width: '110px', render: (t) => <span className="text-[var(--text-secondary)] truncate">{t.track ?? '-'}</span> },
-  { key: 'module', label: 'Module', width: '140px', render: (t) => <span className="text-[var(--text-secondary)] truncate">{t.module ?? '-'}</span> },
-  { key: 'owner', label: 'Owner', width: '140px', render: (t) => <span className="text-[var(--text-secondary)] truncate">{t.primaryOwner ?? '-'}</span> },
+  { key: 'milestone', label: 'Milestone', width: '100px', render: (t) => <span className="text-[var(--text-secondary)] truncate block">{t.milestone ?? '-'}</span> },
+  { key: 'track', label: 'Track', width: '110px', render: (t) => <span className="text-[var(--text-secondary)] truncate block">{t.track ?? '-'}</span> },
+  { key: 'module', label: 'Module', width: '140px', render: (t) => <span className="text-[var(--text-secondary)] truncate block">{t.module ?? '-'}</span> },
+  { key: 'owner', label: 'Owner', width: '140px', render: (t) => <span className="text-[var(--text-secondary)] truncate block">{t.primaryOwner ?? '-'}</span> },
   {
     key: 'start',
     label: 'Start',
@@ -80,7 +80,7 @@ const COLUMNS: ColumnDef[] = [
         <span className="text-[var(--text-tertiary)]">-</span>
       ),
   },
-  { key: 'party', label: 'Party', width: '80px', render: (t) => <span className="text-[var(--text-secondary)] truncate">{t.party ?? '-'}</span> },
+  { key: 'party', label: 'Party', width: '80px', render: (t) => <span className="text-[var(--text-secondary)] truncate block">{t.party ?? '-'}</span> },
   {
     key: 'status',
     label: 'Health',
@@ -283,9 +283,9 @@ function Row({
       className="grid gap-2 px-4 items-center text-sm border-b border-[var(--border-hairline)]/60 cursor-pointer hover:bg-[var(--bg-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--color-brand-blue)] focus-visible:-outline-offset-2"
     >
       {columns.map((c) => (
-        <span key={c.key} className="min-w-0">
+        <div key={c.key} className="min-w-0 overflow-hidden">
           {c.render(task)}
-        </span>
+        </div>
       ))}
     </div>
   )
