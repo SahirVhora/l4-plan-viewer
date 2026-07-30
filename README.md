@@ -32,7 +32,9 @@ Produces a static bundle in `dist/`. Open `dist/index.html` directly (or serve t
 
 ## Loading your plan
 
-Drop `CST238_SuccessFactors_Detailed_MS_Project_Import_Plan_v3.xlsx` (or any workbook following the same column layout) onto the drop zone, or use "Load / replace file" in the top bar once a plan is loaded. There is no bundled sample plan — a fabricated one would misrepresent the real data, so the app always starts empty until you provide a file.
+Drop `CST238_SuccessFactors_Detailed_MS_Project_Import_Plan_v3.xlsx` (or any workbook following the same column layout) onto the drop zone, or use "Load / replace file" in the top bar once a plan is loaded. The app always starts on the empty drop zone — it never auto-loads real data.
+
+To see the app populated without a real file, use the "Try it with the sample plan" button on the drop zone, or download `public/sample/L4-sample-plan.xlsx` directly. It's a synthetic 37-task, 9-milestone programme (no real client data) that exercises every column and every view: multi-level hierarchy, dependencies with lag, a payment-gate milestone, RAID items, MD Brief priorities, and a spread of complete/in-progress/at-risk/late tasks. Use it as a reference for the exact column layout an input workbook needs.
 
 The workbook is expected to contain these sheets (matched case-insensitively, trimmed): `MS Project Import` (required), `Milestone Summary`, `MD Brief`, `Resource Dictionary`, `Assumptions Decisions`, `Import Guide` (not surfaced in the UI). Missing optional sheets degrade gracefully — the relevant panel says so instead of crashing.
 
