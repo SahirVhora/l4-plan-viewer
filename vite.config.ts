@@ -15,7 +15,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,xlsx}'],
+        globPatterns: ['**/*.{js,css,html,svg,png}'],
       },
       manifest: {
         name: 'L4 Programme Plan Viewer',

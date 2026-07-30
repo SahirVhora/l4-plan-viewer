@@ -32,9 +32,7 @@ Produces a static bundle in `dist/`. Open `dist/index.html` directly (or serve t
 
 ## Loading your plan
 
-Drop `CST238_SuccessFactors_Detailed_MS_Project_Import_Plan_v3.xlsx` (or any workbook following the same column layout) onto the drop zone, or use "Load / replace file" in the top bar once a plan is loaded. The app always starts on the empty drop zone — it never auto-loads real data.
-
-To see the app populated without a real file, use the "Try it with the sample plan" button on the drop zone, or download `public/sample/L4-sample-plan.xlsx` directly. It's a synthetic 37-task, 9-milestone programme (no real client data) that exercises every column and every view: multi-level hierarchy, dependencies with lag, a payment-gate milestone, RAID items, MD Brief priorities, and a spread of complete/in-progress/at-risk/late tasks. Use it as a reference for the exact column layout an input workbook needs.
+Drop `CST238_SuccessFactors_Detailed_MS_Project_Import_Plan_v3.xlsx` (or any workbook following the same column layout) onto the drop zone, or use "Load / replace file" in the top bar once a plan is loaded. The app always starts on the empty drop zone — it never auto-loads any data.
 
 The workbook is expected to contain these sheets (matched case-insensitively, trimmed): `MS Project Import` (required), `Milestone Summary`, `MD Brief`, `Resource Dictionary`, `Assumptions Decisions`, `Import Guide` (not surfaced in the UI). Missing optional sheets degrade gracefully — the relevant panel says so instead of crashing.
 
@@ -72,14 +70,9 @@ src/
 - **Large plans**: the Task table uses `@tanstack/react-virtual` for row virtualisation; the Gantt renders only visible (filtered) rows. Both were smoke-tested but the bundled synthetic fixtures are small — if you load a very large plan (1000+ rows) and notice jank, that's the first place to look.
 - **Known dependency advisory**: the `xlsx` (SheetJS) package on the npm registry has two published advisories (prototype pollution, ReDoS) with no npm-registry fix available at time of writing. Risk is limited to processing a maliciously crafted local file you choose to open yourself — there's no network exposure — but worth knowing if you later swap in an untrusted-file-upload flow.
 - **Bundle size**: `xlsx` and every view except the Dashboard are dynamically imported, so the initial load only ships the app shell and Dashboard (~124 KB gzipped). The parser chunk (~141 KB gzipped) loads the first time a file is dropped, not before.
-- **Installable / offline-first**: the built app registers a service worker (`vite-plugin-pwa`) that precaches the app shell, all view chunks and the sample workbook, so a repeat visit works with no network at all — not just "works after the JS has loaded once," but installable as a PWA from the browser's install prompt.
+- **Installable / offline-first**: the built app registers a service worker (`vite-plugin-pwa`) that precaches the app shell and all view chunks, so a repeat visit works with no network at all — not just "works after the JS has loaded once," but installable as a PWA from the browser's install prompt.
 - **Task table columns** are configurable via the "Columns" control (ID, Name and Health are pinned); the choice persists to `localStorage` per browser.
 - **Accessibility**: the Task Detail drawer traps focus and closes on Escape, restoring focus to whatever triggered it; Gantt tree rows and milestone markers are keyboard-operable (Tab + Enter/Space); icon-only controls carry `aria-label`s; decorative gridlines are `aria-hidden`.
-
-## Sample and fixture data
-
-- `public/sample/L4-sample-plan.xlsx` — the "Try it with the sample plan" workbook described above.
-- `src/test-fixtures/buildFixtureWorkbook.ts` — a smaller in-memory fixture used only by `parseWorkbook.test.ts`.
 
 ## Verified before calling this done
 
@@ -89,6 +82,6 @@ src/
 - Filters, search, and the Task Detail drawer (with clickable predecessor/successor chips) work consistently across Gantt, Table and Resources.
 - Light and dark themes both render correctly; `prefers-reduced-motion` is respected via a global CSS override.
 - Print output produces a clean, paginated, landscape layout with no sidebar/topbar bleed-through.
-- After a first visit, the app (including the "try sample" flow) works with the browser fully offline — verified with the service worker installed and network disabled.
+- After a first visit, the app works with the browser fully offline — verified with the service worker installed and network disabled.
 - Focus trap and Escape-to-close verified on the Task Detail drawer; keyboard Tab+Enter verified on Gantt tree rows.
 - `npm run test` (21 tests) and `npm run build` both pass with no console errors.

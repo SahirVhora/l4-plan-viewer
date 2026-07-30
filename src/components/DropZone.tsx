@@ -1,10 +1,8 @@
-import { useCallback, useRef, useState, type MouseEvent } from 'react'
-import { Download, FileSpreadsheet, PlayCircle, ShieldCheck, UploadCloud } from 'lucide-react'
+import { useCallback, useRef, useState } from 'react'
+import { FileSpreadsheet, ShieldCheck, UploadCloud } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { parseWorkbook, WorkbookParseError } from '../parsing/parseWorkbook'
 import { useAppStore } from '../state/store'
-
-const SAMPLE_PATH = `${import.meta.env.BASE_URL}sample/L4-sample-plan.xlsx`
 
 export function DropZone() {
   const setPlan = useAppStore((s) => s.setPlan)
@@ -37,24 +35,6 @@ export function DropZone() {
       }
     },
     [setPlan, setParseError],
-  )
-
-  const handleTrySample = useCallback(
-    async (e: MouseEvent) => {
-      e.stopPropagation()
-      setIsLoading(true)
-      try {
-        const response = await fetch(SAMPLE_PATH)
-        const blob = await response.blob()
-        const file = new File([blob], 'L4-sample-plan.xlsx', { type: blob.type })
-        await handleFile(file)
-      } catch {
-        setParseError('Could not load the bundled sample workbook. Try downloading it instead.')
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    [handleFile, setParseError],
   )
 
   return (
@@ -109,27 +89,6 @@ export function DropZone() {
             <span>All processing happens locally in your browser. Nothing is uploaded anywhere.</span>
           </div>
         </div>
-
-        <div className="mt-5 flex items-center justify-center gap-2 flex-wrap">
-          <button
-            onClick={handleTrySample}
-            disabled={isLoading}
-            className="flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg bg-[var(--color-brand-navy)] text-white hover:opacity-90 transition-opacity disabled:opacity-60"
-          >
-            <PlayCircle size={15} /> Try it with the sample plan
-          </button>
-          <a
-            href={SAMPLE_PATH}
-            download
-            onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg border border-[var(--border-hairline)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
-          >
-            <Download size={15} /> Download the sample workbook
-          </a>
-        </div>
-        <p className="mt-2 text-center text-xs text-[var(--text-tertiary)]">
-          The sample is a synthetic 37-task plan with no real client data, following the exact column layout this app expects.
-        </p>
 
         {parseError && (
           <motion.div
