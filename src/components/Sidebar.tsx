@@ -40,6 +40,8 @@ export function Sidebar() {
             key={id}
             onClick={() => setView(id)}
             title={label}
+            aria-label={label}
+            aria-current={view === id ? 'page' : undefined}
             className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
               view === id
                 ? 'bg-[var(--color-brand-navy)] text-white font-medium'
@@ -54,6 +56,7 @@ export function Sidebar() {
 
       <button
         onClick={() => setCollapsed((c) => !c)}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         className="m-2 flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs text-[var(--text-tertiary)] hover:bg-[var(--bg-hover)]"
       >
         {collapsed ? <ChevronsRight size={16} /> : <ChevronsLeft size={16} />}

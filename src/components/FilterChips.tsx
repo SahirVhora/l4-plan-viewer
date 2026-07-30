@@ -24,6 +24,7 @@ function MultiChipGroup({
           <button
             key={opt}
             onClick={() => onChange(active ? selected.filter((v) => v !== opt) : [...selected, opt])}
+            aria-pressed={active}
             className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
               active
                 ? 'bg-[var(--color-brand-navy)] text-white border-[var(--color-brand-navy)]'
@@ -67,6 +68,7 @@ export function FilterChips({ plan }: { plan: ProgrammePlan }) {
 
       <button
         onClick={() => setFilters({ criticalOnly: !filters.criticalOnly })}
+        aria-pressed={filters.criticalOnly}
         className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
           filters.criticalOnly
             ? 'bg-[var(--color-rag-red)] text-white border-[var(--color-rag-red)]'
@@ -77,6 +79,7 @@ export function FilterChips({ plan }: { plan: ProgrammePlan }) {
       </button>
       <button
         onClick={() => setFilters({ atRiskOnly: !filters.atRiskOnly })}
+        aria-pressed={filters.atRiskOnly}
         className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
           filters.atRiskOnly
             ? 'bg-[var(--color-rag-amber)] text-white border-[var(--color-rag-amber)]'

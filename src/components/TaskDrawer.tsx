@@ -1,10 +1,12 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { format } from 'date-fns'
 import { X } from 'lucide-react'
 import type { ProgrammePlan } from '../model/types'
 import { useAppStore } from '../state/store'
 import { RAG_META } from '../theme/rag'
+
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
 function fmt(d: Date | null): string {
   return d ? format(d, 'd MMM yyyy') : 'Not set'
@@ -33,6 +35,42 @@ export function TaskDrawer({ plan }: { plan: ProgrammePlan }) {
   const selectedTaskId = useAppStore((s) => s.selectedTaskId)
   const selectTask = useAppStore((s) => s.selectTask)
   const task = selectedTaskId !== null ? plan.tasksById.get(selectedTaskId) : null
+  const panelRef = useRef<HTMLDivElement>(null)
+  const previouslyFocused = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (!task) return
+    previouslyFocused.current = document.activeElement as HTMLElement | null
+    const panel = panelRef.current
+    const focusables = panel?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+    focusables?.[0]?.focus()
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        selectTask(null)
+        return
+      }
+      if (e.key === 'Tab' && panel) {
+        const nodes = panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+        if (nodes.length === 0) return
+        const first = nodes[0]
+        const last = nodes[nodes.length - 1]
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      previouslyFocused.current?.focus()
+    }
+  }, [task, selectTask])
 
   return (
     <AnimatePresence>
@@ -46,6 +84,10 @@ export function TaskDrawer({ plan }: { plan: ProgrammePlan }) {
             onClick={() => selectTask(null)}
           />
           <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Task details: ${task.name}`}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -71,7 +113,11 @@ export function TaskDrawer({ plan }: { plan: ProgrammePlan }) {
                   )}
                 </div>
               </div>
-              <button onClick={() => selectTask(null)} className="shrink-0 h-8 w-8 flex items-center justify-center rounded-lg hover:bg-[var(--bg-hover)]">
+              <button
+                onClick={() => selectTask(null)}
+                aria-label="Close task details"
+                className="shrink-0 h-8 w-8 flex items-center justify-center rounded-lg hover:bg-[var(--bg-hover)]"
+              >
                 <X size={16} />
               </button>
             </div>

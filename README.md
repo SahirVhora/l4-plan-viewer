@@ -71,7 +71,15 @@ src/
 - **Payment percentages**: same 0-1 vs 0-100 detection. If the nine milestones' payment percentages don't sum to ~100%, a warning appears in the Dashboard's "Data notes" panel instead of failing silently.
 - **Large plans**: the Task table uses `@tanstack/react-virtual` for row virtualisation; the Gantt renders only visible (filtered) rows. Both were smoke-tested but the bundled synthetic fixtures are small — if you load a very large plan (1000+ rows) and notice jank, that's the first place to look.
 - **Known dependency advisory**: the `xlsx` (SheetJS) package on the npm registry has two published advisories (prototype pollution, ReDoS) with no npm-registry fix available at time of writing. Risk is limited to processing a maliciously crafted local file you choose to open yourself — there's no network exposure — but worth knowing if you later swap in an untrusted-file-upload flow.
-- **No sample data is bundled.** Use your own `CST238_...xlsx` export, or run `npm run test` to see the parser exercised against an in-repo synthetic fixture (`src/test-fixtures/buildFixtureWorkbook.ts`).
+- **Bundle size**: `xlsx` and every view except the Dashboard are dynamically imported, so the initial load only ships the app shell and Dashboard (~124 KB gzipped). The parser chunk (~141 KB gzipped) loads the first time a file is dropped, not before.
+- **Installable / offline-first**: the built app registers a service worker (`vite-plugin-pwa`) that precaches the app shell, all view chunks and the sample workbook, so a repeat visit works with no network at all — not just "works after the JS has loaded once," but installable as a PWA from the browser's install prompt.
+- **Task table columns** are configurable via the "Columns" control (ID, Name and Health are pinned); the choice persists to `localStorage` per browser.
+- **Accessibility**: the Task Detail drawer traps focus and closes on Escape, restoring focus to whatever triggered it; Gantt tree rows and milestone markers are keyboard-operable (Tab + Enter/Space); icon-only controls carry `aria-label`s; decorative gridlines are `aria-hidden`.
+
+## Sample and fixture data
+
+- `public/sample/L4-sample-plan.xlsx` — the "Try it with the sample plan" workbook described above.
+- `src/test-fixtures/buildFixtureWorkbook.ts` — a smaller in-memory fixture used only by `parseWorkbook.test.ts`.
 
 ## Verified before calling this done
 
@@ -81,4 +89,6 @@ src/
 - Filters, search, and the Task Detail drawer (with clickable predecessor/successor chips) work consistently across Gantt, Table and Resources.
 - Light and dark themes both render correctly; `prefers-reduced-motion` is respected via a global CSS override.
 - Print output produces a clean, paginated, landscape layout with no sidebar/topbar bleed-through.
+- After a first visit, the app (including the "try sample" flow) works with the browser fully offline — verified with the service worker installed and network disabled.
+- Focus trap and Escape-to-close verified on the Task Detail drawer; keyboard Tab+Enter verified on Gantt tree rows.
 - `npm run test` (21 tests) and `npm run build` both pass with no console errors.

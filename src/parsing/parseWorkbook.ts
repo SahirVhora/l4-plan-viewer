@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx'
+import type * as XLSX from 'xlsx'
 import type {
   AssumptionDecisionRow,
   DataNote,
@@ -75,11 +75,12 @@ function canonicaliseHeader(cell: string): string {
 }
 
 type SheetRows = unknown[][]
+type XlsxLib = typeof XLSX
 
-function sheetToRows(workbook: XLSX.WorkBook, sheetName: string): SheetRows | null {
+function sheetToRows(xlsxLib: XlsxLib, workbook: XLSX.WorkBook, sheetName: string): SheetRows | null {
   const sheet = workbook.Sheets[sheetName]
   if (!sheet) return null
-  return XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: null }) as SheetRows
+  return xlsxLib.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: null }) as SheetRows
 }
 
 function findSheetName(workbook: XLSX.WorkBook, target: string): string | null {
@@ -183,14 +184,14 @@ function parseTaskRow(obj: Record<string, unknown>): Task {
   }
 }
 
-function parseMsProjectSheet(workbook: XLSX.WorkBook): Task[] {
+function parseMsProjectSheet(xlsxLib: XlsxLib, workbook: XLSX.WorkBook): Task[] {
   const sheetName = findSheetName(workbook, 'MS Project Import')
   if (!sheetName) {
     throw new WorkbookParseError(
       'Could not find a sheet named "MS Project Import". This workbook does not look like a recognised L4 programme plan export.',
     )
   }
-  const rows = sheetToRows(workbook, sheetName)
+  const rows = sheetToRows(xlsxLib, workbook, sheetName)
   if (!rows || rows.length === 0) {
     throw new WorkbookParseError(`Sheet "${sheetName}" is empty.`)
   }
@@ -218,13 +219,13 @@ function parseMsProjectSheet(workbook: XLSX.WorkBook): Task[] {
   return tasks
 }
 
-function parseMilestoneSummarySheet(workbook: XLSX.WorkBook, notes: DataNote[]): MilestoneSummaryRow[] {
+function parseMilestoneSummarySheet(xlsxLib: XlsxLib, workbook: XLSX.WorkBook, notes: DataNote[]): MilestoneSummaryRow[] {
   const sheetName = findSheetName(workbook, 'Milestone Summary')
   if (!sheetName) {
     notes.push({ level: 'info', message: 'No "Milestone Summary" sheet found; milestone timeline and payment visual will be limited.' })
     return []
   }
-  const rows = sheetToRows(workbook, sheetName)
+  const rows = sheetToRows(xlsxLib, workbook, sheetName)
   if (!rows || rows.length < 2) return []
   const headerInfo = findGenericHeaderRow(rows, ['Milestone'])
   if (!headerInfo) return []
@@ -273,13 +274,13 @@ function findGenericHeaderRow(rows: SheetRows, required: string[]): { headerInde
   return null
 }
 
-function parseMdBriefSheet(workbook: XLSX.WorkBook, notes: DataNote[]): { brief: MdBriefRow[]; priorities: MdPriorityRow[] } {
+function parseMdBriefSheet(xlsxLib: XlsxLib, workbook: XLSX.WorkBook, notes: DataNote[]): { brief: MdBriefRow[]; priorities: MdPriorityRow[] } {
   const sheetName = findSheetName(workbook, 'MD Brief')
   if (!sheetName) {
     notes.push({ level: 'info', message: 'No "MD Brief" sheet found; Executive Brief panel will be empty.' })
     return { brief: [], priorities: [] }
   }
-  const rows = sheetToRows(workbook, sheetName)
+  const rows = sheetToRows(xlsxLib, workbook, sheetName)
   if (!rows) return { brief: [], priorities: [] }
 
   const briefHeader = findGenericHeaderRow(rows, ['Baseline Outcome'])
@@ -321,13 +322,13 @@ function parseMdBriefSheet(workbook: XLSX.WorkBook, notes: DataNote[]): { brief:
   return { brief, priorities }
 }
 
-function parseResourceDictionarySheet(workbook: XLSX.WorkBook, notes: DataNote[]): ResourceDictionaryRow[] {
+function parseResourceDictionarySheet(xlsxLib: XlsxLib, workbook: XLSX.WorkBook, notes: DataNote[]): ResourceDictionaryRow[] {
   const sheetName = findSheetName(workbook, 'Resource Dictionary')
   if (!sheetName) {
     notes.push({ level: 'info', message: 'No "Resource Dictionary" sheet found; resource organisation colour-coding will default to neutral.' })
     return []
   }
-  const rows = sheetToRows(workbook, sheetName)
+  const rows = sheetToRows(xlsxLib, workbook, sheetName)
   if (!rows) return []
   const headerInfo = findGenericHeaderRow(rows, ['Resource / Role']) ?? findGenericHeaderRow(rows, ['Resource'])
   if (!headerInfo) return []
@@ -347,13 +348,13 @@ function parseResourceDictionarySheet(workbook: XLSX.WorkBook, notes: DataNote[]
   return out
 }
 
-function parseAssumptionsSheet(workbook: XLSX.WorkBook, notes: DataNote[]): AssumptionDecisionRow[] {
+function parseAssumptionsSheet(xlsxLib: XlsxLib, workbook: XLSX.WorkBook, notes: DataNote[]): AssumptionDecisionRow[] {
   const sheetName = findSheetName(workbook, 'Assumptions Decisions')
   if (!sheetName) {
     notes.push({ level: 'info', message: 'No "Assumptions Decisions" sheet found; RAID panel will be empty.' })
     return []
   }
-  const rows = sheetToRows(workbook, sheetName)
+  const rows = sheetToRows(xlsxLib, workbook, sheetName)
   if (!rows) return []
   const headerInfo = findGenericHeaderRow(rows, ['ID', 'Topic'])
   if (!headerInfo) return []
@@ -385,16 +386,18 @@ function parseAssumptionsSheet(workbook: XLSX.WorkBook, notes: DataNote[]): Assu
 }
 
 export async function parseWorkbook(file: File): Promise<ProgrammePlan> {
+  // Loaded on demand (not in the initial bundle) since it's only needed once a file is dropped.
+  const xlsxLib = await import('xlsx')
   const buffer = await file.arrayBuffer()
   let workbook: XLSX.WorkBook
   try {
-    workbook = XLSX.read(buffer, { type: 'array', cellDates: true })
+    workbook = xlsxLib.read(buffer, { type: 'array', cellDates: true })
   } catch {
     throw new WorkbookParseError('This file could not be read as an Excel workbook (.xlsx).')
   }
 
   const dataNotes: DataNote[] = []
-  const tasks = parseMsProjectSheet(workbook)
+  const tasks = parseMsProjectSheet(xlsxLib, workbook)
 
   const { rootIds } = buildHierarchy(tasks)
   const tasksById = new Map(tasks.map((t) => [t.id, t]))
@@ -417,10 +420,10 @@ export async function parseWorkbook(file: File): Promise<ProgrammePlan> {
     task.health = deriveHealth(task, today)
   }
 
-  const milestoneSummary = parseMilestoneSummarySheet(workbook, dataNotes)
-  const { brief: mdBrief, priorities: mdPriorities } = parseMdBriefSheet(workbook, dataNotes)
-  const resourceDictionary = parseResourceDictionarySheet(workbook, dataNotes)
-  const assumptions = parseAssumptionsSheet(workbook, dataNotes)
+  const milestoneSummary = parseMilestoneSummarySheet(xlsxLib, workbook, dataNotes)
+  const { brief: mdBrief, priorities: mdPriorities } = parseMdBriefSheet(xlsxLib, workbook, dataNotes)
+  const resourceDictionary = parseResourceDictionarySheet(xlsxLib, workbook, dataNotes)
+  const assumptions = parseAssumptionsSheet(xlsxLib, workbook, dataNotes)
 
   const allStarts = tasks.map((t) => t.start).filter((d): d is Date => d !== null)
   const allFinishes = tasks.map((t) => t.finish).filter((d): d is Date => d !== null)

@@ -60,6 +60,9 @@ export interface DependencyLine {
   id: string
   path: string
   critical: boolean
+  lagDays: number
+  labelX: number
+  labelY: number
 }
 
 export function buildDependencyLines(
@@ -89,7 +92,14 @@ export function buildDependencyLines(
 
       const midX = (x1 + x2) / 2
       const path = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`
-      lines.push({ id: `${dep.fromId}-${row.task.id}-${dep.type}`, path, critical: predecessor.criticalPath && fromTask.criticalPath })
+      lines.push({
+        id: `${dep.fromId}-${row.task.id}-${dep.type}`,
+        path,
+        critical: predecessor.criticalPath && fromTask.criticalPath,
+        lagDays: dep.lagDays,
+        labelX: midX,
+        labelY: (y1 + y2) / 2,
+      })
     })
   })
 

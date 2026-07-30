@@ -27,16 +27,35 @@ export function MilestoneTimeline({ plan }: { plan: ProgrammePlan }) {
   const maxTime = dated.length ? Math.max(...dated.map((m) => m.planningTarget!.getTime())) : Date.now()
   const span = Math.max(maxTime - minTime, 1)
 
+  const pcts = milestones.map((m, idx) =>
+    m.planningTarget ? ((m.planningTarget.getTime() - minTime) / span) * 100 : (idx / Math.max(milestones.length - 1, 1)) * 100,
+  )
+  // Stagger labels onto extra rows when two milestones land close enough together to overlap.
+  const LABEL_COLLISION_PCT = 6
+  const rows: number[] = []
+  let lastPct: number | null = null
+  let row = 0
+  pcts.forEach((pct) => {
+    row = lastPct !== null && Math.abs(pct - lastPct) < LABEL_COLLISION_PCT ? row + 1 : 0
+    rows.push(row)
+    lastPct = pct
+  })
+  const rowCount = Math.max(...rows) + 1
+
   return (
     <div className="relative py-10 px-4 overflow-x-auto">
-      <div className="relative h-1 rounded-full bg-[var(--border-hairline)] min-w-[640px]">
+      <div className="relative h-1 rounded-full bg-[var(--border-hairline)] min-w-[640px]" style={{ marginBottom: rowCount > 1 ? (rowCount - 1) * 16 : 0 }}>
         {milestones.map((m, idx) => {
-          const pct = m.planningTarget ? ((m.planningTarget.getTime() - minTime) / span) * 100 : (idx / Math.max(milestones.length - 1, 1)) * 100
+          const pct = pcts[idx]
+          const labelRow = rows[idx]
           const isGate = m.paymentPct >= 0.15
           return (
             <motion.button
               key={m.milestone}
               onClick={() => filterByMilestone(m.milestone)}
+              aria-label={`Filter plan to milestone ${m.milestone}, ${m.paymentPct * 100}% payment, target ${
+                m.planningTarget ? format(m.planningTarget, 'd MMM yyyy') : 'not set'
+              }`}
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.25, delay: idx * 0.03 }}
@@ -58,7 +77,10 @@ export function MilestoneTimeline({ plan }: { plan: ProgrammePlan }) {
                   </div>
                 </div>
               </div>
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[11px] font-medium text-[var(--text-secondary)] whitespace-nowrap">
+              <div
+                style={{ bottom: `${-24 - labelRow * 16}px` }}
+                className="absolute left-1/2 -translate-x-1/2 text-[11px] font-medium text-[var(--text-secondary)] whitespace-nowrap"
+              >
                 {m.milestone}
               </div>
             </motion.button>

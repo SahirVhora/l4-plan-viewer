@@ -121,8 +121,17 @@ export function GanttChart({ plan, visibleTaskIds }: { plan: ProgrammePlan; visi
                 onMouseEnter={() => setHoveredId(row.task.id)}
                 onMouseLeave={() => setHoveredId((h) => (h === row.task.id ? null : h))}
                 onClick={() => selectTask(row.task.id)}
+                role="button"
+                tabIndex={0}
+                aria-label={`${row.task.name}, ${row.task.taskType}${row.task.criticalPath ? ', on critical path' : ''}`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    selectTask(row.task.id)
+                  }
+                }}
                 style={{ height: ROW_HEIGHT, paddingLeft: 8 + row.depth * 16 }}
-                className={`flex items-center gap-1.5 pr-2 text-sm cursor-pointer border-b border-[var(--border-hairline)]/60 ${
+                className={`flex items-center gap-1.5 pr-2 text-sm cursor-pointer border-b border-[var(--border-hairline)]/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--color-brand-blue)] focus-visible:-outline-offset-2 ${
                   hoveredId === row.task.id ? 'bg-[var(--bg-hover)]' : ''
                 } ${row.task.criticalPath ? 'border-l-2 border-l-[var(--color-rag-red)]' : ''}`}
               >
@@ -132,6 +141,7 @@ export function GanttChart({ plan, visibleTaskIds }: { plan: ProgrammePlan; visi
                       e.stopPropagation()
                       toggleCollapse(row.task.id)
                     }}
+                    aria-label={row.isCollapsed ? `Expand ${row.task.name}` : `Collapse ${row.task.name}`}
                     className="shrink-0 h-4 w-4 flex items-center justify-center text-[var(--text-tertiary)]"
                   >
                     {row.isCollapsed ? <ChevronRight size={13} /> : <ChevronDown size={13} />}
@@ -178,7 +188,7 @@ export function GanttChart({ plan, visibleTaskIds }: { plan: ProgrammePlan; visi
           <div ref={bodyRef} onScroll={() => syncScroll('body')} className="flex-1 overflow-auto relative">
             <div style={{ width: chartWidth, height: chartHeight, position: 'relative' }}>
               {ticks.map((tick, i) => (
-                <div key={i} style={{ left: tick.x }} className={`absolute top-0 bottom-0 border-l ${tick.isMajor ? 'border-[var(--border-hairline)]' : 'border-[var(--border-hairline)]/40'}`} />
+                <div key={i} aria-hidden="true" style={{ left: tick.x }} className={`absolute top-0 bottom-0 border-l ${tick.isMajor ? 'border-[var(--border-hairline)]' : 'border-[var(--border-hairline)]/40'}`} />
               ))}
 
               {todayX >= 0 && todayX <= chartWidth && (
@@ -190,17 +200,31 @@ export function GanttChart({ plan, visibleTaskIds }: { plan: ProgrammePlan; visi
               )}
 
               {showDependencyLinks && (
-                <svg width={chartWidth} height={chartHeight} className="absolute inset-0 pointer-events-none">
+                <svg width={chartWidth} height={chartHeight} aria-hidden="true" className="absolute inset-0 pointer-events-none">
                   {depLines.map((line) => (
-                    <path
-                      key={line.id}
-                      d={line.path}
-                      fill="none"
-                      stroke={line.critical ? 'var(--color-rag-red)' : 'var(--text-tertiary)'}
-                      strokeWidth={line.critical ? 1.5 : 1}
-                      strokeOpacity={0.55}
-                      markerEnd="url(#gantt-arrow)"
-                    />
+                    <g key={line.id}>
+                      <path
+                        d={line.path}
+                        fill="none"
+                        stroke={line.critical ? 'var(--color-rag-red)' : 'var(--text-tertiary)'}
+                        strokeWidth={line.critical ? 1.5 : 1}
+                        strokeOpacity={0.55}
+                        markerEnd="url(#gantt-arrow)"
+                      />
+                      {line.lagDays !== 0 && (
+                        <text
+                          x={line.labelX}
+                          y={line.labelY - 4}
+                          textAnchor="middle"
+                          fontSize={9}
+                          fill="var(--text-tertiary)"
+                          className="tabular"
+                          style={{ paintOrder: 'stroke', stroke: 'var(--bg-surface)', strokeWidth: 3 }}
+                        >
+                          {line.lagDays > 0 ? `+${line.lagDays}d` : `${line.lagDays}d`}
+                        </text>
+                      )}
+                    </g>
                   ))}
                   <defs>
                     <marker id="gantt-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
@@ -300,6 +324,7 @@ function GanttBar({
       onMouseEnter={() => onHover(task.id)}
       onMouseLeave={() => onHover(null)}
       onClick={onClick}
+      aria-hidden="true"
       style={{ position: 'absolute', top: y, left: 0, right: 0, height: ROW_HEIGHT }}
       className="cursor-pointer group"
     >
