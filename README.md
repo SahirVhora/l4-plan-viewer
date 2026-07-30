@@ -1,6 +1,17 @@
 # L4 Programme Plan Viewer
 
+[![Live on GitHub Pages](https://img.shields.io/badge/live-sahirvhora.github.io%2Fl4--plan--viewer-2e5395)](https://sahirvhora.github.io/l4-plan-viewer/)
+[![Deploy to GitHub Pages](https://github.com/SahirVhora/l4-plan-viewer/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/SahirVhora/l4-plan-viewer/actions/workflows/deploy-pages.yml)
+![React](https://img.shields.io/badge/React-19-1f3864)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-1f3864)
+![Vite](https://img.shields.io/badge/Vite-8-1f3864)
+![100% client-side](https://img.shields.io/badge/processing-100%25%20client--side-b8860b)
+
 A fully client-side dashboard for a Level-4 (L4) programme plan exported from MS Project as an Excel workbook. Drop the workbook in, and it renders an executive-grade Dashboard, Gantt, Task table, Milestones, RAID (Assumptions & Decisions) and Resources view. Everything runs in the browser: parsing, rendering, filtering, CSV export and print/PDF export. Nothing is uploaded anywhere, and the app works fully offline once built.
+
+![L4 Programme Plan Viewer](public/social-preview.png)
+
+**Live:** https://sahirvhora.github.io/l4-plan-viewer/
 
 ## Running it
 
