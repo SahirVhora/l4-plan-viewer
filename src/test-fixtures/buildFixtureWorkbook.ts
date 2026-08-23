@@ -1,10 +1,10 @@
-import * as XLSX from 'xlsx'
+import { Workbook } from 'exceljs'
 
 /**
  * Builds a tiny synthetic workbook matching the documented L4 column layout,
  * used to unit-test the parser end to end without needing the real file.
  */
-export function buildFixtureWorkbook(): XLSX.WorkBook {
+export function buildFixtureWorkbook(): Workbook {
   const titleRows = [['CST238 SuccessFactors Programme Plan (synthetic fixture)'], []]
   const header = [
     'ID',
@@ -49,40 +49,35 @@ export function buildFixtureWorkbook(): XLSX.WorkBook {
   ]
 
   const sheetData = [...titleRows, header, ...rows]
-  const wsMain = XLSX.utils.aoa_to_sheet(sheetData)
+  const workbook = new Workbook()
+  workbook.addWorksheet('MS Project Import').addRows(sheetData)
 
-  const wsMilestone = XLSX.utils.aoa_to_sheet([
+  workbook.addWorksheet('Milestone Summary').addRows([
     ['Milestone', 'Contract Stage / Track', 'Planning Target', 'Contract Timing', 'Payment %', 'Acceptance Authority', 'Acceptance Evidence', 'Executable Tasks', 'Critical Tasks', 'Baseline Confidence', 'Schedule Status', 'Source', 'Comment'],
     ['M1', 'Prepare / Track A', 45310, 'Contractual', 0.1, 'Council Sponsor', 'M1 signoff pack', 2, 1, 'High', 'On Track', 'Contract Schedule 2', ''],
     ['M2', 'Explore / Track A', 45400, 'Contractual', 0.9, 'Council Sponsor', 'Final signoff pack', 0, 0, 'Medium', 'Not Started', 'Contract Schedule 2', ''],
   ])
 
-  const wsResourceDict = XLSX.utils.aoa_to_sheet([
+  workbook.addWorksheet('Resource Dictionary').addRows([
     ['Resource / Role', 'Organisation'],
     ['Jane Lead', 'VE3'],
     ['Bob PM', 'Council'],
   ])
 
-  const wsAssumptions = XLSX.utils.aoa_to_sheet([
+  workbook.addWorksheet('Assumptions Decisions').addRows([
     ['ID', 'Type', 'Topic', 'Current Planning Position', 'Impact if Wrong', 'Decision / Evidence Required', 'Owner', 'Target Decision Date', 'Status', 'Affects Milestone', 'Schedule Treatment', 'Source', 'MD Attention'],
     ['AD-001', 'Assumption', 'Data cleansing scope', 'Council owns cleansing', 'Slip of 2 weeks', 'Confirm with data lead', 'Bob PM', 45305, 'Open', 'M1', 'No change', 'Workshop notes', 'High'],
   ])
 
-  const wsMdBrief = XLSX.utils.aoa_to_sheet([
+  workbook.addWorksheet('MD Brief').addRows([
     ['Baseline Outcome', 'Value', 'Executive Implication', 'Control'],
     ['On track for M1', 'Low risk', 'No MD action needed', 'Monitor weekly'],
   ])
 
-  const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, wsMain, 'MS Project Import')
-  XLSX.utils.book_append_sheet(workbook, wsMilestone, 'Milestone Summary')
-  XLSX.utils.book_append_sheet(workbook, wsResourceDict, 'Resource Dictionary')
-  XLSX.utils.book_append_sheet(workbook, wsAssumptions, 'Assumptions Decisions')
-  XLSX.utils.book_append_sheet(workbook, wsMdBrief, 'MD Brief')
   return workbook
 }
 
-export function workbookToFile(workbook: XLSX.WorkBook, name = 'fixture.xlsx'): File {
-  const out = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' })
+export async function workbookToFile(workbook: Workbook, name = 'fixture.xlsx'): Promise<File> {
+  const out = await workbook.xlsx.writeBuffer()
   return new File([out], name, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
 }

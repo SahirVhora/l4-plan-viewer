@@ -4,7 +4,7 @@ import { buildFixtureWorkbook, workbookToFile } from '../test-fixtures/buildFixt
 
 describe('parseWorkbook (synthetic fixture)', () => {
   it('parses the flat task list into a tree with correct rollups and dependencies', async () => {
-    const file = workbookToFile(buildFixtureWorkbook())
+    const file = await workbookToFile(buildFixtureWorkbook())
     const plan = await parseWorkbook(file)
 
     expect(plan.tasks).toHaveLength(6)
@@ -42,7 +42,7 @@ describe('parseWorkbook (synthetic fixture)', () => {
   })
 
   it('flags when milestone payment percentages do not sum to 100%', async () => {
-    const file = workbookToFile(buildFixtureWorkbook())
+    const file = await workbookToFile(buildFixtureWorkbook())
     const plan = await parseWorkbook(file)
     const paymentSum = plan.milestoneSummary.reduce((s, m) => s + m.paymentPct, 0)
     expect(paymentSum).toBeCloseTo(1, 5)
