@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 
 export function KpiCard({
@@ -15,7 +15,7 @@ export function KpiCard({
   accentClass?: string
 }) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
@@ -27,6 +27,6 @@ export function KpiCard({
       </div>
       <div className={`mt-3 text-3xl font-semibold tabular ${accentClass}`}>{value}</div>
       {sublabel && <div className="mt-1 text-xs text-[var(--text-secondary)]">{sublabel}</div>}
-    </motion.div>
+    </m.div>
   )
 }
