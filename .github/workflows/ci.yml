@@ -22,3 +22,5 @@ jobs:
           npm test
       - run: |
           npm run build
+      - name: Reject moderate or higher dependency advisories
+        run: npm audit --audit-level=moderate
