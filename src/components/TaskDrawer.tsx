@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import { format } from 'date-fns'
 import { X } from 'lucide-react'
 import type { ProgrammePlan } from '../model/types'
@@ -76,14 +76,14 @@ export function TaskDrawer({ plan }: { plan: ProgrammePlan }) {
     <AnimatePresence>
       {task && (
         <>
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/30 z-40 no-print"
             onClick={() => selectTask(null)}
           />
-          <motion.div
+          <m.div
             ref={panelRef}
             role="dialog"
             aria-modal="true"
@@ -200,7 +200,7 @@ export function TaskDrawer({ plan }: { plan: ProgrammePlan }) {
                 </Section>
               )}
             </div>
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

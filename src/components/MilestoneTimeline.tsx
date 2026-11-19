@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { motion } from 'framer-motion'
+import { m as motion } from 'framer-motion'
 import type { ProgrammePlan } from '../model/types'
 import { useAppStore } from '../state/store'
 
