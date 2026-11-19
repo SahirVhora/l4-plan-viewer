@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { FileSpreadsheet, ShieldCheck, UploadCloud } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { parseWorkbook, WorkbookParseError } from '../parsing/parseWorkbook'
 import { useAppStore } from '../state/store'
 
@@ -39,7 +39,7 @@ export function DropZone() {
 
   return (
     <div className="flex-1 flex items-center justify-center p-8">
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -91,16 +91,16 @@ export function DropZone() {
         </div>
 
         {parseError && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-4 rounded-xl border border-[var(--color-rag-red)]/30 bg-[var(--color-rag-red)]/5 px-4 py-3 text-sm text-[var(--color-rag-red)] flex items-start gap-2"
           >
             <FileSpreadsheet size={16} className="mt-0.5 shrink-0" />
             <span>{parseError}</span>
-          </motion.div>
+          </m.div>
         )}
-      </motion.div>
+      </m.div>
     </div>
   )
 }
